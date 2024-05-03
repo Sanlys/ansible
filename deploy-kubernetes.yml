@@ -1,0 +1,60 @@
+- hosts: kubernetes_master
+  become: yes
+  remote_user: kubernetes
+  gather_facts: yes
+
+  tasks:
+    - name: Install prerequisites on first node
+      apt:
+        name: "{{ item }}"
+        state: latest
+        update_cache: yes
+      loop:
+        - curl
+        - apt-transport-https
+
+    - name: Download k3s installation script on first node
+      get_url:
+        url: https://get.k3s.io
+        dest: /tmp/install_k3s.sh
+        mode: "u+x"
+
+    - name: Init first node
+      shell: sh /tmp/install_k3s.sh --cluster-init --node-name "{{ node_name }}"
+      register: k3s_install_output
+      changed_when: "'[INFO]  No change detected so skipping service start' not in k3s_install_output.stdout"
+
+    - name: Get the k3s token from the first node
+      slurp:
+        src: /var/lib/rancher/k3s/server/node-token
+      register: k3s_token
+
+    - name: Set k3s token as fact on first node
+      set_fact:
+        k3s_token: "{{ (k3s_token['content'] | b64decode).strip() }}"
+
+- hosts: kubernetes
+  become: yes
+  remote_user: kubernetes
+  gather_facts: yes
+  
+  tasks:
+    - name: Install prerequisites
+      apt:
+        name: "{{ item }}"
+        state: latest
+        update_cache: yes
+      loop:
+        - curl
+        - apt-transport-https
+
+    - name: Download k3s installation script
+      get_url:
+        url: https://get.k3s.io
+        dest: /tmp/install_k3s.sh
+        mode: "u+x"
+
+    - name: Init k3s
+      shell: sh /tmp/install_k3s.sh --server https://{{ hostvars[groups['kubernetes_master'][0]]['ansible_default_ipv4']['address'] }}:6443 --token "{{ hostvars[groups['kubernetes_master'][0]]['k3s_token'] }}" --node-name "{{ node_name }}"
+      register: k3s_install_output
+      changed_when: "'[INFO]  No change detected so skipping service start' not in k3s_install_output.stdout"
