@@ -59,12 +59,12 @@
       register: k3s_install_output
       changed_when: "'[INFO]  No change detected so skipping service start' not in k3s_install_output.stdout"
 
-- host: kubernetes-master
+- hosts: kubernetes_master
   become: yes
   remote_user: kubernetes
   gather_facts: yes
 
   tasks:
     - name: Apply deployment file
-      shell: curl <> | kubectl apply -f -
+      shell: kubectl apply -f "https://raw.githubusercontent.com/Sanlys/ansible/main/deployment.yml?token=GHSAT0AAAAAACR2THA3DZMEBE4IDMXUBHWKZRXPADQ"
       register: kubectl_apply_output
