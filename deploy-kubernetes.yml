@@ -65,6 +65,17 @@
   gather_facts: yes
 
   tasks:
+    - name: Install metallb namespace
+      shell: kubectl apply -f "https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/namespace.yaml"
+      register: metallb_ns_output
+      changed_when: "{{ 'created' in metallb_ns_output.stdout or 'configured' in metallb_ns_output_output.stdout }}"
+
+    - name: Install metallb
+      shell: kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/metallb.yaml
+      register: metallb_output
+      changed_when: "{{ 'created' in metallb_output.stdout or 'configured' in metallb_output.stdout }}"
+
     - name: Apply deployment file
-      shell: kubectl apply -f "https://raw.githubusercontent.com/Sanlys/ansible/main/deployment.yml?token=GHSAT0AAAAAACR2THA3DZMEBE4IDMXUBHWKZRXPADQ"
-      register: kubectl_apply_output
+      shell: kubectl apply -f "https://raw.githubusercontent.com/Sanlys/ansible/main/deployment.yml?token=GHSAT0AAAAAACR2THA25WPY6B3I5IVSMXNEZRXPRWQ"
+      register: kubectl_output
+      changed_when: "{{ 'created' in kubectl_output.stdout or 'configured' in kubectl_output.stdout }}"
