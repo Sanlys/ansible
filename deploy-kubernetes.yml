@@ -58,3 +58,13 @@
       shell: sh /tmp/install_k3s.sh --server https://{{ hostvars[groups['kubernetes_master'][0]]['ansible_default_ipv4']['address'] }}:6443 --token "{{ hostvars[groups['kubernetes_master'][0]]['k3s_token'] }}" --node-name "{{ node_name }}"
       register: k3s_install_output
       changed_when: "'[INFO]  No change detected so skipping service start' not in k3s_install_output.stdout"
+
+- host: kubernetes-master
+  become: yes
+  remote_user: kubernetes
+  gather_facts: yes
+
+  tasks:
+    - name: Apply deployment file
+      shell: curl <> | kubectl apply -f -
+      register: kubectl_apply_output
