@@ -84,7 +84,7 @@ spec:
           value: postgres  # Assuming you are using PostgreSQL; change as per your DB
         - name: GF_DATABASE_HOST
           value: "192.168.1.121:5432"  # Replace with your database host and port
-        - name: GF_DATABABASE_NAME
+        - name: GF_DATABASE_NAME
           value: "grafanadb"
         - name: GF_DATABASE_USER
           value: "grafanauser"
