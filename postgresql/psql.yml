@@ -1,0 +1,94 @@
+- name: Install PostgreSQL on Ubuntu
+  hosts: all
+  become: yes
+  remote_user: psql
+  handlers:
+    - name: Restart PostgreSQL
+      ansible.builtin.service:
+        name: postgresql
+        state: restarted
+  tasks:
+    
+    - name: Ensure ACL is installed
+      become: true
+      apt:
+        name: acl
+        state: present
+        update_cache: yes
+
+
+    - name: Ensure python3 and pip are installed
+      ansible.builtin.apt:
+        name:
+          - python3
+          - python3-pip
+        state: present
+
+    - name: Install psycopg2
+      ansible.builtin.pip:
+        name: psycopg2-binary
+        state: present
+
+    - name: Import the repository signing key
+      ansible.builtin.apt_key:
+        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+        state: present
+
+    - name: Add PostgreSQL repository
+      ansible.builtin.apt_repository:
+        repo: deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main
+        state: present
+        update_cache: yes
+
+    - name: Install PostgreSQL
+      ansible.builtin.apt:
+        name: postgresql
+        state: present
+        update_cache: yes
+
+    - name: Ensure PostgreSQL is running
+      ansible.builtin.service:
+        name: postgresql
+        state: started
+        enabled: yes
+
+    - name: Enable remote connections to PostgreSQL
+      ansible.builtin.lineinfile:
+        path: /etc/postgresql/16/main/postgresql.conf
+        regexp: '^#listen_addresses ='
+        line: "listen_addresses = '*'"
+        state: present
+      notify: Restart PostgreSQL
+
+    - name: Ensure PostgreSQL pg_hba.conf allows password authentication over the network
+      become: yes
+      lineinfile:
+        path: /etc/postgresql/16/main/pg_hba.conf
+        regexp: '^host\s+all\s+all\s+.*'
+        line: 'host    all             all             0.0.0.0/0               md5'
+        state: present
+        insertafter: EOF
+      notify: Restart PostgreSQL
+
+    - name: Ensure postgres user exists
+      user:
+        name: postgres
+        system: yes
+        createhome: yes
+
+    - name: Create a new PostgreSQL user
+      become: yes
+      become_user: postgres
+      ansible.builtin.postgresql_user:
+        name: grafanauser
+        password: 6af38ca9e308d7852146f92bdd9688f4
+        role_attr_flags: CREATEDB,NOSUPERUSER
+        state: present
+
+    - name: Create a new PostgreSQL database
+      become: yes
+      become_user: postgres
+      ansible.builtin.postgresql_db:
+        name: grafanadb
+        owner: grafanauser
+        state: present
