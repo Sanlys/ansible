@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -6,10 +7,10 @@ metadata:
 data:
   config: |
     address-pools:
-    - name: default
+      - name: default
       protocol: layer2
       addresses:
-      - 192.168.1.80-192.168.1.99
+        - 192.168.1.80-192.168.1.99
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -26,10 +27,10 @@ spec:
         run: nginx
     spec:
       containers:
-      - name: nginx
-        image: nginx
-        ports:
-        - containerPort: 80
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
 ---
 apiVersion: v1
 kind: Service
@@ -38,8 +39,8 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-  - port: 80
-    targetPort: 80
+    - port: 80
+      targetPort: 80
   selector:
     run: nginx
 ---
@@ -65,7 +66,7 @@ metadata:
   labels:
     app: grafana
 spec:
-  replicas: 3  # Number of Grafana instances for HA
+  replicas: 3
   selector:
     matchLabels:
       app: grafana
@@ -75,31 +76,30 @@ spec:
         app: grafana
     spec:
       containers:
-      - name: grafana
-        image: grafana/grafana:latest  # Use the specific version as per your requirement
-        ports:
+        - name: grafana
+          image: grafana/grafana:latest
+          ports:
         - containerPort: 3000
-        env:
-        - name: GF_DATABASE_TYPE
-          value: postgres  # Assuming you are using PostgreSQL; change as per your DB
-        - name: GF_DATABASE_HOST
-          value: "192.168.1.121:5432"  # Replace with your database host and port
-        - name: GF_DATABASE_NAME
-          value: "grafanadb"
-        - name: GF_DATABASE_USER
-          value: "grafanauser"
-        - name: GF_DATABASE_PASSWORD
-          value: "6af38ca9e308d7852146f92bdd9688f4"
-        readinessProbe:
-          httpGet:
-            path: /api/health
-            port: 3000
-          initialDelaySeconds: 30
-          timeoutSeconds: 5
-        livenessProbe:
-          httpGet:
-            path: /api/health
-            port: 3000
-          initialDelaySeconds: 30
-          timeoutSeconds: 5
-
+          env:
+            - name: GF_DATABASE_TYPE
+              value: postgres
+            - name: GF_DATABASE_HOST
+              value: "192.168.1.121:5432"
+            - name: GF_DATABASE_NAME
+              value: "grafanadb"
+            - name: GF_DATABASE_USER
+              value: "grafanauser"
+            - name: GF_DATABASE_PASSWORD
+              value: "6af38ca9e308d7852146f92bdd9688f4"
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
