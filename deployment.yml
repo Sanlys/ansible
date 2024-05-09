@@ -91,6 +91,7 @@ spec:
               value: "grafanauser"
             - name: GF_DATABASE_PASSWORD
               value: "6af38ca9e308d7852146f92bdd9688f4"
+            - name: GF_INSTALL_PLUGINS=grafana-oncall-app
           readinessProbe:
             httpGet:
               path: /api/health
