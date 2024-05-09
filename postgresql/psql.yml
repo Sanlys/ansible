@@ -76,7 +76,7 @@
         system: yes
         createhome: yes
 
-    - name: Create a new PostgreSQL user
+    - name: Create a user for grafana
       become: yes
       become_user: postgres
       ansible.builtin.postgresql_user:
@@ -85,10 +85,27 @@
         role_attr_flags: CREATEDB,NOSUPERUSER
         state: present
 
-    - name: Create a new PostgreSQL database
+    - name: Create a database for grafana
       become: yes
       become_user: postgres
       ansible.builtin.postgresql_db:
         name: grafanadb
         owner: grafanauser
+        state: present
+
+    - name: Create a user for grafana oncall
+      become: yes
+      become_user: postgres
+      ansible.builtin.postgresql_user:
+        name: grafanaoncalluser
+        password: 1cc030fd4728188b29e3ea409face826
+        role_attr_flags: CREATEDB,NOSUPERUSER
+        state: present
+
+    - name: Create a database for grafana oncall
+      become: yes
+      become_user: postgres
+      ansible.builtin.postgresql_db:
+        name: grafanaoncalldb
+        owner: grafanaoncalluser
         state: present
