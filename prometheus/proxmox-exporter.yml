@@ -1,0 +1,69 @@
+---
+- name: Deploy Prometheus PVE Exporter
+  hosts: all
+  become: yes
+  vars_prompt:
+    - name: pve_user
+      prompt: "Enter the Proxmox VE user (e.g., root@pam)"
+      private: no
+    - name: pve_password
+      prompt: "Enter the Proxmox VE password"
+      private: yes
+
+  tasks:
+    - name: Ensure Python3 and Pip are installed
+      apt:
+        name:
+          - python3
+          - python3-pip
+        state: present
+        update_cache: yes
+
+    - name: Install Prometheus PVE Exporter via pip
+      pip:
+        name: prometheus-pve-exporter
+        state: "{{ pve_exporter_version }}"
+
+    - name: Create the Prometheus PVE Exporter configuration directory
+      file:
+        path: /etc/prometheus
+        state: directory
+        mode: 0755
+
+    - name: Deploy Prometheus PVE Exporter configuration file
+      copy:
+        dest: /etc/prometheus/pve.yml
+        content: |
+          default:
+            user: '{{ pve_user }}'
+            password: '{{ pve_password }}'
+            verify_ssl: false
+        mode: 0600
+
+    - name: Create systemd service for Prometheus PVE Exporter
+      copy:
+        dest: /etc/systemd/system/prometheus-pve-exporter.service
+        content: |
+          [Unit]
+          Description=Prometheus PVE Exporter
+          Wants=network-online.target
+          After=network-online.target
+
+          [Service]
+          User=nobody
+          Group=nogroup
+          Type=simple
+          ExecStart=/usr/local/bin/prometheus-pve-exporter /etc/prometheus/pve.yml
+          Restart=on-failure
+
+          [Install]
+          WantedBy=multi-user.target
+        mode: 0644
+
+    - name: Enable and start Prometheus PVE Exporter service
+      systemd:
+        name: prometheus-pve-exporter
+        enabled: yes
+        state: started
+        daemon_reload: yes
+
