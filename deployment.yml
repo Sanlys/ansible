@@ -37,7 +37,7 @@ metadata:
   name: nginx
 spec:
   type: LoadBalancer
-  ports:
+  ports:w
   - port: 80
     targetPort: 80
   selector:
@@ -51,12 +51,12 @@ metadata:
     app: grafana
 spec:
   ports:
-    - port: 3000
+    - port: 80
       targetPort: 3000
   selector:
     app: grafana
   type: LoadBalancer
-
+  loadBalancerIP: 192.168.1.82
 ---
 apiVersion: apps/v1
 kind: Deployment
