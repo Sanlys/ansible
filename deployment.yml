@@ -110,5 +110,4 @@ spec:
             - containerPort: 8080
           env:
             - name: DATABASE_URL
-            value: "postgresql://grafanaoncalluser:1cc030fd4728188b29e3ea409face826@192.168.1.121:5432/grafanaoncalldb"
-
+              value: "postgresql://grafanaoncalluser:1cc030fd4728188b29e3ea409face826@192.168.1.121:5432/grafanaoncalldb"
