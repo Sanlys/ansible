@@ -124,20 +124,19 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: grafana-oncall
-  namespace: grafana-oncall
+  name: grafanaoncall
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: grafana-oncall
+      app: grafanaoncall
   template:
     metadata:
       labels:
-        app: grafana-oncall
+        app: grafanaoncall
     spec:
       containers:
-        - name: grafana-oncall
+        - name: grafanaoncall
           image: grafana/oncall:latest
           ports:
             - containerPort: 8080
