@@ -10,7 +10,7 @@ data:
       - name: default
       protocol: layer2
       addresses:
-        - 192.168.1.80-192.168.1.99
+        - 10.0.5.150-10.0.5.200
 ---
 apiVersion: v1
 kind: Service
@@ -25,7 +25,7 @@ spec:
   selector:
     app: grafana
   type: LoadBalancer
-  loadBalancerIP: 192.168.1.82
+  loadBalancerIP: 10.0.5.150
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -52,7 +52,7 @@ spec:
             - name: GF_DATABASE_TYPE
               value: postgres
             - name: GF_DATABASE_HOST
-              value: "192.168.1.121:5432"
+              value: "psql.s1.lan:5432"
             - name: GF_DATABASE_NAME
               value: "grafanadb"
             - name: GF_DATABASE_USER
@@ -87,7 +87,7 @@ spec:
   selector:
     app: grafanaoncall
   type: LoadBalancer
-  loadBalancerIP: 192.168.1.83
+  loadBalancerIP: 10.0.5.151
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -110,4 +110,4 @@ spec:
             - containerPort: 8080
           env:
             - name: DATABASE_URL
-              value: "postgresql://grafanaoncalluser:1cc030fd4728188b29e3ea409face826@192.168.1.121:5432/grafanaoncalldb"
+              value: "postgresql://grafanaoncalluser:1cc030fd4728188b29e3ea409face826@psql.s1.lan:5432/grafanaoncalldb"

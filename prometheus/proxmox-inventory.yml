@@ -1,4 +1,4 @@
 [proxmox]
-pve1.lan
-pve2.lan
-pve3.lan
+pve1.lan ansible_user=root
+pve2.lan ansible_user=root
+pve3.lan ansible_user=root

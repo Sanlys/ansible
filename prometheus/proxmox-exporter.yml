@@ -16,13 +16,20 @@
         name:
           - python3
           - python3-pip
+          - python3-venv
+          - virtualenv
         state: present
         update_cache: yes
 
-    - name: Install Prometheus PVE Exporter via pip
+    - name: Create a virtual environment for Prometheus PVE Exporter
+      command: python3 -m venv /opt/prometheus_pve_exporter_venv
+      args:
+        creates: /opt/prometheus_pve_exporter_venv
+
+    - name: Install Prometheus PVE Exporter within the virtual environment
       pip:
         name: prometheus-pve-exporter
-        state: "{{ pve_exporter_version }}"
+        virtualenv: /opt/prometheus_pve_exporter_venv
 
     - name: Create the Prometheus PVE Exporter configuration directory
       file:
@@ -30,7 +37,7 @@
         state: directory
         mode: 0755
 
-    - name: Deploy Prometheus PVE Exporter configuration file
+    - name: Create Prometheus PVE Exporter configuration file
       copy:
         dest: /etc/prometheus/pve.yml
         content: |
@@ -38,9 +45,11 @@
             user: '{{ pve_user }}'
             password: '{{ pve_password }}'
             verify_ssl: false
-        mode: 0600
+        mode: 0640
+        group: nogroup
+        user: root
 
-    - name: Create systemd service for Prometheus PVE Exporter
+    - name: Copy systemd service for Prometheus PVE Exporter
       copy:
         dest: /etc/systemd/system/prometheus-pve-exporter.service
         content: |
@@ -53,11 +62,40 @@
           User=nobody
           Group=nogroup
           Type=simple
-          ExecStart=/usr/local/bin/prometheus-pve-exporter /etc/prometheus/pve.yml
+          ExecStart=/opt/prometheus_pve_exporter_venv/bin/prometheus-pve-exporter /etc/prometheus/pve.yml
           Restart=on-failure
 
           [Install]
           WantedBy=multi-user.target
+        mode: 0644
+
+    - name: Create systemd service for Prometheus PVE Exporter
+      copy:
+        dest: /etc/systemd/system/prometheus-pve-exporter.service
+        content: |
+          [Unit]
+          Description=Prometheus PVE Exporter
+          Wants=network-online.target
+          After=network-online.target
+
+          [Service]
+          Type=simple
+          User=nobody
+          ExecStart=/opt/prometheus_pve_exporter_venv/bin/pve_exporter \
+                    --config.file /etc/prometheus/pve.yml \
+                    --web.listen-address [::]:9221 \
+                    --collector.status \
+                    --collector.version \
+                    --collector.node \
+                    --collector.cluster \
+                    --collector.resources \
+                    --collector.config \
+                    --collector.replication
+          Restart=on-failure
+
+          [Install]
+          WantedBy=multi-user.target
+
         mode: 0644
 
     - name: Enable and start Prometheus PVE Exporter service

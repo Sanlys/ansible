@@ -1,6 +1,5 @@
 - hosts: kubernetes_master
   become: yes
-  remote_user: kubernetes
   gather_facts: yes
 
   tasks:
@@ -35,7 +34,6 @@
 
 - hosts: kubernetes
   become: yes
-  remote_user: kubernetes
   gather_facts: yes
   
   tasks:
@@ -61,7 +59,6 @@
 
 - hosts: kubernetes_master
   become: yes
-  remote_user: kubernetes
   gather_facts: yes
 
   tasks:
@@ -69,11 +66,6 @@
       shell: kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.5/config/manifests/metallb-native.yaml
       register: metallb_output
       changed_when: "{{ 'created' in metallb_output.stdout or 'configured' in metallb_output.stdout }}"
-    
-    - name: Install longhorn
-      shell: kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.6.1/deploy/longhorn.yaml
-      register: longhorn_output
-      changed_when: "{{ 'created' in longhorn_output.stdout or 'configured' in longhorn_output.stdout }}"   
 
     - name: Apply deployment file
       shell: kubectl apply -f "https://raw.githubusercontent.com/Sanlys/ansible/main/deployment.yml"

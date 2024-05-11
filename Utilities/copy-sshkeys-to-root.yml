@@ -1,0 +1,23 @@
+---
+- name: Copy SSH Keys to Root User
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Fetch authorized keys from regular user
+      slurp:
+        src: "/home/{{ ansible_user }}/.ssh/authorized_keys"
+      register: ssh_keys
+
+    - name: Ensure SSH directory exists for root
+      file:
+        path: "/root/.ssh"
+        state: directory
+        mode: '0700'
+
+    - name: Add authorized keys to root user
+      authorized_key:
+        user: root
+        state: present
+        key: "{{ ssh_keys.content | b64decode }}"
+
