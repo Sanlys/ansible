@@ -34,7 +34,7 @@ spec:
   selector:
     app: grafana
   type: LoadBalancer
-  loadBalancerIP: 10.0.5.150
+  loadBalancerIP: 10.0.5.151
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -96,7 +96,7 @@ spec:
   selector:
     app: grafanaoncall
   type: LoadBalancer
-  loadBalancerIP: 10.0.5.151
+  loadBalancerIP: 10.0.5.152
 ---
 apiVersion: apps/v1
 kind: Deployment
